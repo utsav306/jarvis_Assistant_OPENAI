@@ -7,6 +7,8 @@ from config import apikey
 import os
 import  random
 import string
+import requests
+import json
 
 chatStr = ""
 def chat(query):
@@ -27,6 +29,50 @@ def chat(query):
     say(response["choices"][0]["text"])
     chatStr += f"{response['choices'][0]['text']}\n"
     return response["choices"][0]["text"]
+
+
+def weather(city):
+    url = "https://weather-by-api-ninjas.p.rapidapi.com/v1/weather"
+    say("Whats the city name you want to know weather about : \n")
+    city = takecommand()
+    if city == "Some error occured":
+        say("Some error occured in speech recognition , please enter the city name you want to know weather about :")
+        print("Enter the city name : ")
+        city = input()
+
+    querystring = {"city": city}
+
+    headers = {
+        "X-RapidAPI-Key": "61edba90famsha86f9cf13c233a7p10921ejsn6156531a5740",
+        "X-RapidAPI-Host": "weather-by-api-ninjas.p.rapidapi.com"
+    }
+
+    response = requests.get(url, headers=headers, params=querystring)
+    wdic = json.loads(response.text)
+    humi = wdic.get("humidity")
+    if humi is None:
+        humi = "not found"
+    min_temp = wdic.get("min_temp")
+    if min_temp is None:
+        min_temp = "not found"
+
+    max_temp = wdic.get("max_temp")
+    if max_temp is None:
+        max_temp = "not found"
+
+    feel = wdic.get("feels_like")
+    if feel is None:
+        feel = "not found"
+
+    print(f"Maximum Temperature : {max_temp} \n")
+    print(f"Minimum Temperature : {min_temp} \n")
+    print(f"Humidity : {humi} \n")
+    print(f"Feels Like : {feel} \n")
+
+    say(f"The maximum temperature for {city} will be {max_temp} degree Celsius and the minimum temperature will be {min_temp} degree Celsius. The humidity is {humi} percent and It feels like {feel} degree centigrade.")
+
+
+# {'cloud_pct': 75, 'temp': 28, 'feels_like': 33, 'humidity': 89, 'min_temp': 28, 'max_temp': 28, 'wind_speed': 4.63, 'wind_degrees': 170, 'sunrise': 1686957718, 'sunset': 1687006361}
 
 
 
@@ -95,7 +141,8 @@ if __name__ == '__main__':
         if "the time" in query:
             strftime=datetime.datetime.now().strftime("%H:%M:%S")
             say(f"Sir ,the time is{strftime} ")
-
+        elif "weather update".lower() in query.lower():
+            weather(query)
         elif "Using artificial intelligence".lower() in query.lower():
             ai(prompt=query)
         elif "Exit".lower() in query.lower():
